@@ -167,7 +167,7 @@ public class Main implements ApplicationListener {
         spriteBatch.end();
 
         // Draw the rects of objects
-        drawHitBoxes();
+        //drawHitBoxes();
 
         // Draw bucket droplets
         spriteBatch.begin();

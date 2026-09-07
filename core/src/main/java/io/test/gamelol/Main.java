@@ -36,6 +36,7 @@ public class Main implements ApplicationListener {
     // High scope declarations
     Vector2 touchPos;
     Rectangle bucketRectangle;
+    float universalVolume;
 
     @Override
     public void create() {
@@ -65,6 +66,12 @@ public class Main implements ApplicationListener {
         {
             createDroplet();
         }
+
+        // Game volume
+        universalVolume = 0.2f;
+        music.setLooping(true);
+        music.setVolume(universalVolume);
+        music.play();
     }
 
     @Override
@@ -119,12 +126,27 @@ public class Main implements ApplicationListener {
             Sprite dropSprite = drop.sprite;
             dropSprite.translateY(-drop.fallSpeed * delta);
 
-            if (dropSprite.getY() < -dropSprite.getHeight()) {
-                float randomX = MathUtils.random(0f, worldWidth - dropSprite.getHeight());
+            // Reset spawn
+            class Helper {
+                void resetDropPosition ()
+                {
+                    float randomX = MathUtils.random(0f, worldWidth - dropSprite.getHeight());
 
-                dropSprite.setY(worldHeight + dropSprite.getHeight());
-                dropSprite.setX(randomX);
-                drop.fallSpeed = MathUtils.random(1f, 2.1f);
+                    dropSprite.setY(worldHeight + dropSprite.getHeight());
+                    dropSprite.setX(randomX);
+                    drop.fallSpeed = MathUtils.random(1f, 2.1f);
+                }
+            }
+
+            Helper funcs = new Helper();
+
+            if (dropSprite.getY() < -dropSprite.getHeight())
+            {
+                funcs.resetDropPosition();
+            }
+            else if (bucketRectangle.overlaps(drop.rect)) {
+                funcs.resetDropPosition();
+                dropSound.play(universalVolume);
             }
 
             drop.updateRect();
@@ -161,13 +183,14 @@ public class Main implements ApplicationListener {
         float dropW = 0.5f, dropH = 0.5f;
         float worldWidth = viewport.getWorldWidth();
         float worldHeight = viewport.getWorldHeight();
+
         float randomX = MathUtils.random(0f, worldWidth - dropW);
 
         Sprite dropSprite = new Sprite(dropTexture);
         dropSprite.setSize(dropW, dropH);
-        dropSprite.setPosition(randomX, worldHeight-1f);
+        dropSprite.setPosition(randomX, worldHeight-dropH);
 
-        Droplet drop = new Droplet(dropSprite, 1f);
+        Droplet drop = new Droplet(dropSprite);
         dropSprites.add(drop);
     }
 
@@ -201,11 +224,10 @@ public class Main implements ApplicationListener {
 class Droplet {
     Sprite sprite;
     Rectangle rect;
-    float fallSpeed = 1;
+    float fallSpeed = MathUtils.random(1f, 2.1f);
 
-    public Droplet (Sprite dropSprite, float dropletFallSpeed) {
+    public Droplet (Sprite dropSprite) {
         sprite = dropSprite;
-        fallSpeed = dropletFallSpeed;
         rect = new Rectangle(
                     dropSprite.getX(),
                     dropSprite.getY(),
